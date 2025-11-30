@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 from backend.models.mapping_model import ActionType, GestureMapping
 
@@ -12,6 +12,8 @@ class KeyboardService:
         self.enabled = enabled
         self._controller = None
         self._keyboard_lib = None
+        self._Key: Optional[object] = None  # pynput Key enumeration
+        self._alias = {}
         self._load_backend()
 
     def _load_backend(self) -> None:
@@ -20,6 +22,26 @@ class KeyboardService:
 
             self._controller = Controller()
             self._keyboard_lib = Key
+            self._Key = Key
+            self._alias = {
+                "space": Key.space,
+                "enter": Key.enter,
+                "return": Key.enter,
+                "tab": Key.tab,
+                "esc": Key.esc,
+                "escape": Key.esc,
+                "ctrl": Key.ctrl,
+                "control": Key.ctrl,
+                "alt": Key.alt,
+                "shift": Key.shift,
+                "cmd": Key.cmd,
+                "win": Key.cmd,
+                "super": Key.cmd,
+                "left": Key.left,
+                "right": Key.right,
+                "up": Key.up,
+                "down": Key.down,
+            }
             logger.info("Loaded pynput for keyboard control")
         except Exception:  # pragma: no cover - fallback path
             try:
@@ -49,12 +71,18 @@ class KeyboardService:
         else:  # pragma: no cover - future proof
             logger.warning("Unknown action type: %s", mapping.action_type)
 
+    def _resolve_key(self, key: str):
+        if self._Key:
+            return self._alias.get(key.lower(), key)
+        return key
+
     def _press_key(self, key: str, hold_ms: int = 50) -> None:
         try:
             if hasattr(self._controller, "press") and hasattr(self._controller, "release"):
-                self._controller.press(key)
+                resolved = self._resolve_key(key)
+                self._controller.press(resolved)
                 time.sleep(max(hold_ms / 1000.0, 0))
-                self._controller.release(key)
+                self._controller.release(resolved)
             else:
                 # keyboard lib
                 self._controller.send(key)
@@ -66,9 +94,10 @@ class KeyboardService:
         logger.debug("Pressing combo: %s", "+".join(keys_list))
         try:
             if hasattr(self._controller, "press"):
-                for key in keys_list:
+                resolved = [self._resolve_key(k) for k in keys_list]
+                for key in resolved:
                     self._controller.press(key)
-                for key in reversed(keys_list):
+                for key in reversed(resolved):
                     self._controller.release(key)
             else:
                 self._controller.send("+".join(keys_list))

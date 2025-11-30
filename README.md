@@ -20,7 +20,7 @@ models/hand_model.tflite  Placeholder lightweight model
 ### Backend
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv && source .AIenv/bin/activate
 pip install -r requirements.txt
 uvicorn backend.main:app --reload --port 8000
 ```
@@ -35,6 +35,8 @@ npm run dev   # served at http://localhost:5173
 ### C++ Acceleration (optional but recommended)
 ```bash
 cd vision
+sudo apt-get install pybind11-dev
+sudo apt-get install libopencv-dev
 cmake -S . -B build
 cmake --build build
 # Copy resulting vision.*.so/pyd into backend/.venv/lib/python.../site-packages or add build dir to PYTHONPATH
