@@ -1,0 +1,19 @@
+# Node
+frontend/node_modules
+frontend/dist
+
+# Python
+__pycache__
+*.pyc
+.venv
+.env
+backend/mappings.json
+
+#virtual env
+.AIenv
+
+# C++
+vision/build
+*.so
+*.pyd
+*.dll

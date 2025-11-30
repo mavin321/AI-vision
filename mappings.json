@@ -1,0 +1,16 @@
+{
+  "mappings": [
+    {
+      "gesture": "open_hand",
+      "action": "space",
+      "action_type": "key",
+      "hold_ms": 50
+    },
+    {
+      "gesture": "pinch",
+      "action": "ctrl+c",
+      "action_type": "shortcut",
+      "hold_ms": 50
+    }
+  ]
+}
