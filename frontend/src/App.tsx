@@ -1,4 +1,4 @@
-import react,{ useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import WebcamViewer from './components/WebcamViewer';
 import GesturePreview from './components/GesturePreview';
 import KeyMappingsEditor from './components/KeyMappingsEditor';
@@ -6,6 +6,7 @@ import { GestureStatus, connectGestureStream, getGestureStatus, toggleGesture } 
 
 function App() {
   const [status, setStatus] = useState<GestureStatus>({ enabled: true });
+  const [previewEnabled, setPreviewEnabled] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -38,7 +39,7 @@ function App() {
         </div>
       </header>
       <div className="grid">
-        <WebcamViewer active={status.enabled} />
+        <WebcamViewer active={status.enabled && previewEnabled} />
         <GesturePreview
           label={current?.label}
           confidence={current?.confidence}
@@ -48,6 +49,12 @@ function App() {
       </div>
       <div style={{ marginTop: 16 }}>
         <KeyMappingsEditor />
+      </div>
+      <div style={{ marginTop: 12 }} className="flex">
+        <button className="secondary" onClick={() => setPreviewEnabled((v) => !v)}>
+          {previewEnabled ? 'Disable local preview' : 'Enable local preview'}
+        </button>
+        <span className="small">Keep preview off if it conflicts with backend camera access.</span>
       </div>
     </div>
   );

@@ -60,7 +60,9 @@ async def startup_event() -> None:
         broadcaster=broadcaster,
         target_fps=settings.ai_loop_fps,
     )
-    ai_loop.start()
+    # Start only if camera index is valid
+    if settings.camera_index >= 0:
+        ai_loop.start()
 
     app.state.settings = settings
     app.state.mapping_config = mapping_config

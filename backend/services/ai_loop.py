@@ -58,6 +58,7 @@ class AILoopService:
         self.target_fps = target_fps
         self._thread: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
+        self._last_label: Optional[str] = None
 
     def start(self) -> None:
         if self._thread and self._thread.is_alive():
@@ -86,6 +87,9 @@ class AILoopService:
             prediction = GesturePrediction(label=label, confidence=conf)
             self.gesture_state.update(prediction)
             self.broadcaster.emit(prediction)
+            if label != self._last_label:
+                logger.info("Gesture changed: %s (%.2f)", label, conf)
+                self._last_label = label
             self._apply_mapping(prediction)
             elapsed = time.time() - start
             sleep_time = max(interval - elapsed, 0)
