@@ -1,32 +1,28 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { baseURL } from '../api/client';
 
 interface Props {
   active: boolean;
 }
 
 export default function WebcamViewer({ active }: Props) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [src, setSrc] = useState<string>('');
 
   useEffect(() => {
-    let stream: MediaStream | null = null;
+    let timer: number | undefined;
     if (!active) {
+      setSrc('');
       return () => {};
     }
-    (async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (err) {
-        setError('Unable to access webcam');
-        console.error(err);
-      }
-    })();
-
+    const tick = () => {
+      const url = `${baseURL}/api/gesture/frame?ts=${Date.now()}`;
+      setSrc(url);
+    };
+    tick();
+    // Pull frames frequently for smoother preview (~20 fps default loop)
+    timer = window.setInterval(tick, 50);
     return () => {
-      stream?.getTracks().forEach((t) => t.stop());
+      if (timer) window.clearInterval(timer);
     };
   }, [active]);
 
@@ -34,7 +30,7 @@ export default function WebcamViewer({ active }: Props) {
     <div className="card">
       <div className="flex" style={{ justifyContent: 'space-between' }}>
         <div>
-          <div className="small">Webcam preview</div>
+          <div className="small">Backend preview</div>
           <div className="badge">
             <span className={`status-dot ${active ? '' : 'danger'}`}></span>
             {active ? 'Live' : 'Stopped'}
@@ -42,9 +38,14 @@ export default function WebcamViewer({ active }: Props) {
         </div>
       </div>
       <div className="video-frame" style={{ marginTop: 12 }}>
-        <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%' }} />
+        {src ? (
+          <img src={src} alt="preview" style={{ width: '100%', display: 'block' }} />
+        ) : (
+          <div className="small" style={{ padding: 20, textAlign: 'center' }}>
+            Preview disabled
+          </div>
+        )}
       </div>
-      {error && <div className="small" style={{ color: '#f08f6c', marginTop: 8 }}>{error}</div>}
     </div>
   );
 }

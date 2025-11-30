@@ -6,7 +6,7 @@ import { GestureStatus, connectGestureStream, getGestureStatus, toggleGesture } 
 
 function App() {
   const [status, setStatus] = useState<GestureStatus>({ enabled: true });
-  const [previewEnabled, setPreviewEnabled] = useState(false);
+  const [previewEnabled, setPreviewEnabled] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -52,9 +52,9 @@ function App() {
       </div>
       <div style={{ marginTop: 12 }} className="flex">
         <button className="secondary" onClick={() => setPreviewEnabled((v) => !v)}>
-          {previewEnabled ? 'Disable local preview' : 'Enable local preview'}
+          {previewEnabled ? 'Disable preview' : 'Enable preview'}
         </button>
-        <span className="small">Keep preview off if it conflicts with backend camera access.</span>
+        <span className="small">Preview pulls frames from backend, no browser camera needed.</span>
       </div>
     </div>
   );

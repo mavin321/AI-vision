@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import Response
 
 from backend.models.gesture_model import GestureStatus, GestureToggle
 from backend.services.ai_loop import AILoopService, GestureState
@@ -33,3 +34,10 @@ async def toggle_gesture(
     else:
         loop.stop()
     return GestureStatus(latest=state.latest, enabled=state.enabled)
+
+
+@router.get("/frame")
+async def preview_frame(state: GestureState = Depends(get_state)) -> Response:
+    if state.last_frame_jpeg is None:
+        return Response(status_code=204)
+    return Response(content=state.last_frame_jpeg, media_type="image/jpeg")

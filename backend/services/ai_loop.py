@@ -5,6 +5,11 @@ import time
 from collections import deque
 from typing import Callable, Deque, Optional
 
+try:
+    import cv2
+except Exception:
+    cv2 = None
+
 from backend.models.gesture_model import GesturePrediction
 from backend.models.mapping_model import GestureMapping, MappingConfig
 from backend.services.keyboard_service import KeyboardService
@@ -17,12 +22,21 @@ class GestureState:
     def __init__(self) -> None:
         self.latest: Optional[GesturePrediction] = None
         self.enabled: bool = True
+        self.last_frame_jpeg: Optional[bytes] = None
 
     def update(self, prediction: GesturePrediction) -> None:
         self.latest = prediction
 
     def toggle(self, enabled: bool) -> None:
         self.enabled = enabled
+
+    def update_frame(self, frame) -> None:
+        """Store latest frame as JPEG bytes for preview."""
+        if cv2 is None or frame is None:
+            return
+        ok, encoded = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+        if ok:
+            self.last_frame_jpeg = encoded.tobytes()
 
 
 class GestureBroadcaster:
@@ -83,6 +97,7 @@ class AILoopService:
                 time.sleep(interval)
                 continue
             frame = self.vision.preprocess(frame)
+            self.gesture_state.update_frame(frame)
             label, conf = self.vision.extract_landmarks(frame)
             prediction = GesturePrediction(label=label, confidence=conf)
             self.gesture_state.update(prediction)
